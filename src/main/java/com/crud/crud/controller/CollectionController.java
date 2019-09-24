@@ -1,32 +1,54 @@
 package com.crud.crud.controller;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.crud.crud.exception.AlreadyStoreException;
 import com.crud.crud.model.CollectionModel;
 import com.crud.crud.model.CollectionRequestModel;
+import com.crud.crud.model.ResponseComponent;
+import com.crud.crud.model.UnifiedResponse;
 import com.crud.crud.service.CollectionSevice;
+
+import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping(value = "/employee")
+@Api(value="Employee Storage", description = "This is Employeee Crud Opration API")
 public class CollectionController {
 	@Autowired
 	CollectionSevice collectionSevice;
+	
+	private static final Logger logger = LoggerFactory.getLogger(CollectionController.class);
+	 
+	
 
+	
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	public String add(@RequestBody CollectionModel collectionmodel) {
+	public UnifiedResponse<CollectionModel> add(@RequestBody CollectionModel collectionmodel) {
 		CollectionModel cc=new CollectionModel();
 	    cc=collectionSevice.findByFirstName(collectionmodel.getFirstName());
 		if(cc!=null)
 		{
-			return "username is already register...! ";
+			logger.error("name already storr");
+		throw new AlreadyStoreException("name is already exist");
+		
 		}
-		collectionSevice.save(collectionmodel);
-		return "save Successe.......!";
+	
+
+		collectionSevice.save(collectionmodel);				
+		logger.info("save data seccusee");
+		return new UnifiedResponse<CollectionModel>(new ResponseComponent<CollectionModel>("save successes",HttpStatus.OK.value(),collectionmodel,"ok"));
+	
 	}
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(@RequestBody CollectionRequestModel collectionrequestmodel) {
